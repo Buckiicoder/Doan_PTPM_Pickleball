@@ -2,23 +2,23 @@ import { db } from "../../config/db.js";
 
 export async function getAllSan(req, res) {
   try {
+    // ✅ Lấy ngày từ query hoặc mặc định hôm nay
+    const date = req.query.date || new Date().toISOString().split("T")[0];
+
     // 1️⃣ Lấy tất cả thông tin sân
     const [sanRows] = await db.execute(`
       SELECT MaSan, TenSan, LoaiSan, GiaThueTruoc16, GiaThueSau16, TrangThai
       FROM tbl_san
+      ORDER BY CAST(SUBSTRING(MaSan, 2) AS UNSIGNED)
     `);
 
-    // 2️⃣ Lấy toàn bộ thông tin đặt sân (đặt theo ngày giảm dần)
-    const [datSanRows] = await db.execute(`
-      SELECT 
-        MaDatSan, MaSan, MaKH, MaNV, NgayLap, GioVao, GioRa,
-        TongGio, TongTien, GiamGia, TongTienThuc, 
-        GhiChu, TrangThai, LoaiDat
-      FROM tbl_datsan
-      ORDER BY NgayLap DESC
-    `);
+    // 2️⃣ Lấy toàn bộ lịch đặt sân theo ngày được chọn
+    const [datSanRows] = await db.execute(
+      `SELECT * FROM tbl_datsan WHERE DATE(NgayLap) = ? ORDER BY GioVao ASC`,
+      [date]
+    );
 
-    // 3️⃣ Gom dữ liệu theo từng sân
+    // 3️⃣ Gộp dữ liệu đặt sân theo từng sân
     const result = sanRows.map((san) => {
       const bookedSlots = datSanRows
         .filter((ds) => ds.MaSan === san.MaSan)
@@ -45,11 +45,11 @@ export async function getAllSan(req, res) {
         GiaThueTruoc16: san.GiaThueTruoc16,
         GiaThueSau16: san.GiaThueSau16,
         TrangThai: san.TrangThai,
-        bookedSlots, // danh sách các khung giờ đã được đặt
+        bookedSlots,
       };
     });
 
-    // 4️⃣ Trả về kết quả JSON
+    // 4️⃣ Trả về JSON cho frontend
     res.json(result);
   } catch (err) {
     console.error("❌ Lỗi khi lấy danh sách sân:", err);
