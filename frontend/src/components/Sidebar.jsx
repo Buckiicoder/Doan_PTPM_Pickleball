@@ -23,6 +23,10 @@ export function Sidebar() {
             <span className="ic">🗓️</span>
             <span>Đặt sân</span>
           </Link>
+          <Link className="slink" to="/xeve">
+            <span className="ic">🗓️</span>
+            <span>Xé vé</span>
+          </Link>
           <Link className="slink" to="/nhaphang">
             <span className="ic">📥</span>
             <span>Nhập hàng</span>

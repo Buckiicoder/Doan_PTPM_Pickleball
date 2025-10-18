@@ -3,7 +3,9 @@ import { db } from "../../config/db.js";
 export async function getAllSan(req, res) {
   try {
     // ✅ Lấy ngày từ query hoặc mặc định hôm nay
-    const date = req.query.date || new Date().toISOString().split("T")[0];
+    const date =
+      req.query.date ||
+      new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().split("T")[0]; // +7h VN
 
     // 1️⃣ Lấy tất cả thông tin sân
     const [sanRows] = await db.execute(`
